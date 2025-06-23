@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+
+
+
+<title>Up-Down Game!</title>
+<script>
+    const blockSize = 20;
+    //const n = 50, m = 70;
+    const n = 47, m = 60;
+    const gapsize = 0.2;
+    var N, M, ctx;
+    var upX, downX, Y;
+    var a;
+    var state;
+    var in_delay;
+    var lst;
+    var winX = 1, winY = 2;
+    var winned;
+
+    function delay(t, callback) {
+        setTimeout(callback, t * 1000); // t秒后执行回调
+    }
+
+    function sleep(t) {
+        var d = new Date();
+        var tt = d.getTime() + t * 1000;
+        while (1) {
+            d = new Date();
+            if (d.getTime() >= tt) break;
+        }
+    }
+
+    function setCookie(cname,cvalue,exdays) {
+        var d = new Date();
+        d.setTime(d.getTime()+(exdays*24*60*60*1000));
+        var expires = "expires="+d.toGMTString();
+        document.cookie = cname + "=" + cvalue + "; " + expires;
+    }
+    function getCookie(cname) {
+        var name = cname + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0; i<ca.length; i++) {
+            var c = ca[i].trim();
+            if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+        }
+        return "";
+    }
+
+
+    function saveit() {
+        /*
+        setCookie('upx', upX, 1030);
+        setCookie('downx', downX, 100);
+        setCookie('y', Y, 100);
+        s = '';
+        for (var i = 1; i <= n; ++i)
+            for (var j = 1; j <= m; ++j) {
+                s += a[i][j];
+            } 
+        //console.log(s);
+        setCookie('map', s, 100);*/
+    }
+
+    function loadit() {
+        //upX = +getCookie('upx');
+        //downX = +getCookie('downx');
+        //Y = +getCookie('y');
+        //var s = getCookie('map');
+        upX = 18; downX = 19; Y = 18;
+        var s = '101111111111111111111111111111111111111111111111111111111111101111000000000000000000011111111111111111100000000000000001101001011111111111111100011111111111111111100000000011111101101000011111111111111100011111111111110000000000000011111101101000011111110000000000000000000000010111100000000011111101101000011000010011100011100011100111010111100000000010000101101000011000000000000000000000000000010111100000000010110101101000011000000111111122211100000000010111100000010010000101101000011000011101111122211100000000000000000000000000100101101000010000000001111122211100000000000000000000122222100101101000010000011101111122211111111111111122222222111111100101101000010000010001111111111111111111111111111111111111100101101000010000010000000001110001000000000000000000111111100101100001110000010000000000000000000100000000010000111111100101100111110000000000000000000000000100000000010000111111100101100111111111110000000001110000000111111111110000111111100101100100010001000000000001110000000100000000000000111111100101100101000101010000000000000000000112210122110000111111100101100100000000000000000001110000000112210122110000111111100101100100112222221111100001110000000111110111110000111111100101100100011111111110100000000000000111110111110000111111100101100100000000000010000000001111000000010100000000000000000001100100001100000010000000001000000101010101110000111100000101100100000000000010111112222221000101010101000000000000000101100111110000000010111112222221000000000001010000111110000101100111110000010010111111111111000101210121010000100010000101100111110000000010111111111111000101210121010000000010000101100111110000100010111111111111000101110111010000100010000101100111110000000010100001100001000100000000010000100010000101100111110011000110001100001100000111110111110000100010000101100111110000000010000000000000000000000000000000000000000001100111110000000111111111111111111111111111111111100011111101100111110000000010100101110000101000001010101010111011111101100111110000001010000000000000001000000000010000100000000001100111110000000010011000000011001011000001000100100000000001100111110000010000011001110011000000000000010000000000000001100000000000000000000000000000000000000000000000000000000001111111112222222111122211111122211112222111111111111122222221111111112222222111122211111111111112222111111111111122222221111111112222222111111111111111111112222111111111111122222221111111112222222111111111111111111111111111111111111122222221111111112222222111111111111111111111111111111111111122222221111111112222222111111111111111111111111111111111111122222221111111112222222111111111111111111111111111111111111122222221111111112222222111111111111111111111111111111111111122222221111111112222222111111111111111111111111111111111111122222221111111111111111111111111111111111111111111111111111111111111';
+        //console.log(upX + ' ' + downX + ' ' + Y + ' ' + s);
+        var cnt = 0;
+        for (var i = 1; i <= n; ++i)
+            for (var j = 1; j <= m; ++j) {
+                a[i][j] = +s[cnt];
+                ++cnt;
+            }
+        //upX = 18; downX = 19; Y = 18;
+    }
+
+
+    function draw(pred = false) {
+        ctx.fillStyle = '#000000';
+        ctx.fillRect(0, 0, m * blockSize, n * blockSize);
+        for (var i = 1; i <= n; ++i)
+            for (var j = 1; j <= m; ++j) {
+                    var x = (i - 1) * blockSize, y = (j - 1) * blockSize;
+                    if (a[i][j] == 0) ctx.fillStyle = '#cfcfcf';
+                    else if (a[i][j] == 1) ctx.fillStyle = '#404040';
+                    else if (a[i][j] == 2) ctx.fillStyle = '#3399ff';
+                    else ctx.fillStyle = '#ff3333';
+                    ctx.fillRect(y, x, blockSize - gapsize, blockSize - gapsize);
+                }
+        if (!winned) {
+            ctx.beginPath();        
+            var horn = 5; // 画5个角
+            var angle = 360/horn; // 五个角的度数
+            // 两个圆的半径
+            var R = (blockSize - gapsize) / 5 * 3;
+            var r = (blockSize - gapsize) / 5;
+            // 坐标
+            var x = (winY - 1) * blockSize + (blockSize - gapsize) / 2;
+            var y = (winX - 1) * blockSize + (blockSize - gapsize) / 2;
+            for (var i = 0; i < horn; i++) {
+                // 角度转弧度：角度/180*Math.PI
+                // 外圆顶点坐标
+                ctx.lineTo(Math.cos((18 + i * angle) / 180 * Math.PI) * R + x, -Math.sin((18 + i * angle) / 180 * Math.PI) * R + y);
+                // 內圆顶点坐标
+                ctx.lineTo(Math.cos((54 + i * angle) / 180 * Math.PI) * r + x, -Math.sin((54 + i * angle) / 180 * Math.PI) * r + y);
+            }
+            // closePath：关闭路径，将路径的终点与起点相连
+            ctx.closePath();
+            ctx.fillStyle = 'red';
+            ctx.fill();
+            //ctx.stroke();
+        }
+
+        ctx.beginPath();
+        r = (blockSize - gapsize) / 2 - 2;
+        xx = (Y - 1) * blockSize + (blockSize - gapsize) / 2;
+        yy = (downX - 1) * blockSize + (blockSize - gapsize) / 2;
+        ctx.arc(xx, yy, r, 0, 2 * Math.PI);
+        //ctx.stroke();
+        ctx.fillStyle = '#FF8C00';
+        ctx.fill();
+
+
+        ctx.beginPath();
+        r = (blockSize - gapsize) / 2 - 2;
+        xx = (Y - 1) * blockSize + (blockSize - gapsize) / 2;
+        yy = (upX - 1) * blockSize + (blockSize - gapsize) / 2;
+        ctx.arc(xx, yy, r, 0, 2 * Math.PI);
+        //ctx.stroke();        
+        if (pred == true) ctx.fillStyle = '#ff3333';
+        else ctx.fillStyle = '#FF8C00';
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.arc(xx, yy, r / 3 * 2, 0 + 0.5, Math.PI - 0.5);
+        ctx.fillStyle = '#000000';
+        ctx.stroke();
+        
+        ctx.beginPath();
+        ctx.arc(xx - r / 12 * 5, yy - r / 5, r / 8, 0, 2 * Math.PI);
+
+        ctx.fill();
+        ctx.beginPath();
+        
+        ctx.arc(xx + r / 12 * 5, yy - r / 5, r / 8, 0, 2 * Math.PI);
+        ctx.fill();
+
+        var ux = (upX - 1) * blockSize + (blockSize - gapsize) / 2 + r;
+        var dx = (downX - 1) * blockSize + (blockSize - gapsize) / 2 - r;
+        var my = (Y- 1) * blockSize + (blockSize - gapsize) / 2;
+        ctx.fillStyle = '#A0522D';
+        ctx.fillRect(my - 2, ux, 4, dx - ux);
+    }
+
+    function playmode() {
+        state = 0;
+    }
+    function addspace() {
+        state = 1;
+    }
+    function addblock() {
+        state = 2;
+    }
+    function addwater() {
+        state = 3;
+    }
+    function addplayer() {
+        state = 4;
+    }
+
+    function move(dx, dy) {
+        var b = [];
+        for (var i = 0; i <= n; ++i) {
+            b[i] = [];
+            for (var j = 0; j <= m; ++j)
+                b[i][j] = a[i][j];
+        }
+        for (var i = 1; i <= n; ++i)
+            for (var j = 1; j <= m; ++j) {
+                var xx = i - dx;
+                var yy = j - dy;
+                if (xx >= 1 && xx <= n && yy >= 1 && yy <= m)
+                    a[i][j] = b[xx][yy];
+                else a[i][j] = 0;
+            }
+        saveit(); draw();
+    }
+
+    function init() {
+        const canvas = document.querySelector(".myCanvas");
+        N = (canvas.height = n * blockSize);
+        M = (canvas.width = m * blockSize);
+        ctx = canvas.getContext("2d");
+        a = [];
+        for (var i = 0; i <= n; ++i) {
+            a[i] = [];
+            for (var j = 0; j <= m; ++j)
+                a[i][j] = 0;
+        }
+        //upX = 1; downX = 5; Y = 1;
+        in_delay = false;
+        lst = [];
+        state = 0; loadit();
+        winned = false;
+        draw();
+        canvas.onclick = mouseClick;
+    }
+
+
+    function mouseClick() {
+        if (in_delay) return;
+        var x = Math.floor(event.offsetY / blockSize) + 1;
+        var y = Math.floor(event.offsetX / blockSize) + 1;
+        if (x >= 1 && x <= n && y >= 1 && y <= m) {
+            //console.log(state);
+            if (state == 1) {
+                a[x][y] = 0;
+            } else if (state == 2) {
+                a[x][y] = 1;
+            } else if (state == 3) {
+                a[x][y] = 2;
+            } else if (state == 4) {
+                if (x > 1) {
+                    downX = x; Y = y;
+                    upX = x - 1;
+                    state = 5;
+                } else state = 0;
+            } else if (state == 5) {
+                if (y == Y && x < downX)
+                    upX = x;
+                state = 0;
+            }
+            draw(); 
+            saveit();
+
+            //console.log('x:' + x + ' y:' + y);
+        }
+    }
+
+    function presskey() {
+        if (in_delay) return;
+        var last_upX = upX;
+        var last_downX = downX;
+        var last_Y = Y;
+        if (event.which == 65) { // 'A'
+            if (Y == 1 || a[downX][Y - 1] == 1 || a[upX][Y - 1] ==1) return;
+            --Y;
+        } else if (event.which == 68) { // 'D'
+            if (Y == m || a[downX][Y + 1] == 1 || a[upX][Y + 1] ==1) return;
+            ++Y;
+        } else if (event.which == 87) { // 'W'
+            if (downX == n || a[downX + 1][Y] == 1) {
+                while (1) {
+                    if (upX == 1 || a[upX - 1][Y] == 1) break;
+                    --upX;
+                }
+            }
+        } else if (event.which == 83) { // 'S'
+            if (upX < downX - 1 && a[upX + 1][Y] != 1) {
+                while (1) {
+                    if (upX == downX - 1 || a[upX + 1][Y] == 1) break;
+                    ++upX;
+                }
+            } else if (upX < n && a[upX + 1][Y] == 1) {
+                while (1) {
+                    if (upX == downX - 1 || a[downX - 1][Y] == 1) break;
+                    --downX;
+                }
+            }
+        } else if (event.which == 90) { //'Z'
+            if (lst.length == 0) return;
+            ret = lst.pop();
+            downX = ret[0]; upX = ret[1]; Y = ret[2];
+            draw();
+            return;
+            
+        }
+        while (downX < n && a[downX + 1][Y] != 1 && a[upX + 1][Y] != 1) {
+            ++upX;
+            ++downX;
+        }
+        if (a[upX][Y] == 2) {
+            draw(true);
+            in_delay = true;
+            delay(0.1, () => {
+                upX = last_upX; downX = last_downX;
+                Y = last_Y;
+                draw();
+                in_delay = false;
+            }); 
+        } else {
+            if (downX == last_downX && upX == last_upX && Y == last_Y) return;
+            lst.push([last_downX, last_upX, last_Y]);
+            saveit(); draw();
+        }
+        if (winned == false && upX == winX && Y == winY) {
+            in_delay = true;
+            winned = true;
+            delay(0.3, () => {
+                alert('You Win!');
+                in_delay = false;
+            })
+        }
+    }
+    function output() {
+        var nn = 0, mm = 0;
+        for (var i = 1; i <= n; ++i)
+            for (var j = 1; j <= m; ++j)
+            if (a[i][j] != 0) {
+                nn = Math.max(nn, i);
+                mm = Math.max(mm, j);
+            } 
+        console.log(nn, mm);
+        console.log(upX, downX, Y);
+        s = '';
+        for (var i = 1; i <= nn; ++i)
+            for (var j = 1; j <= mm; ++j) {
+                s += a[i][j];
+            } 
+            console.log(s);
+    }
+</script>
+
+</head>
+<body onload="init()" onkeydown="presskey()">
+<h3>WASD to Move, Z to Undo, Touch Star to Win.</h3>
+<!--
+<button type="button" onclick="playmode()">Start</button>
+<button type="button" onclick="addspace()">Space</button>
+<button type="button" onclick="addblock()">Block</button>
+<button type="button" onclick="addwater()">Water</button>
+<button type="button" onclick="addplayer()">Player</button>
+<br>
+<button type="button" onclick="move(-1,0)">Up</button>
+<button type="button" onclick="move(1,0)">Down</button>
+<button type="button" onclick="move(0,-1)">Left</button>
+<button type="button" onclick="move(0,1)">Right</button>
+<button type="button" onclick="output()">Output</button>
+<button type="button" onclick="Restart()">Restart</button>
+<br>
+-->
+
+<canvas class="myCanvas"></canvas>
+
+
+</body>
+
+
+</html>
